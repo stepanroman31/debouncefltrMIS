@@ -11,5 +11,15 @@
 #include "platformMIS32mk.h"
 #include <stdbool.h>
 #include <stdint.h>
+// Definice struktur
+typedef struct {
+unsigned int counter;
+bool previousValue;
+bool currentValue;
+} filterTypeBool_t;
+typedef struct{
+    bool previousInputValue;
+    bool outputValue;
+}memoryTypeBool_t;
 
 
