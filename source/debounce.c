@@ -19,6 +19,19 @@ bool runMemoryTypeBool (memoryTypeBool_t *mem, bool value){
     mem->previousInputValue = value;
     return mem->outputValue;
 }
+bool runFilterTypeBool (filterTypeBool_t *filter, bool value){
+    if (value != filter->previousValue){
+        filter->counter++;
+        if (filter->counter >= 3){
+            filter->previousValue = value;
+            filter->currentValue = value;
+            filter->counter = 0;
+        }
+    }else {
+        filter->counter = 0;
+    }
+    return filter->currentValue;
+}
 
        
 
