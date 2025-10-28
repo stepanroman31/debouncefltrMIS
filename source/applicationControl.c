@@ -54,13 +54,32 @@ long inputPeriod;
 void configApplication(void){//------------------------------------------------
   //--- User defined functions ---
   inputPeriod = 250;
+  initFilterTypeBool (&S1_filter, false);
+  initFilterTypeBool (&S2_filter, false);
+  initFilterTypeBool (&S9A_filter, false);
+  initFilterTypeBool (&S9B_filter, false);
+  initMemoryTypeBool (&S1_memory, false);
+  initMemoryTypeBool (&S2_memory, false);
 
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
 
 void runApplication(void) {//--------------------------------------------------
-      
+    bool S1_raw = getButtonS1();
+    bool S2_raw = getButtonS2();
+    bool S9A_raw = getCoderChannelA();
+    bool S9B_raw = getCoderChannelB();
+    bool S1_filtered = runFilterTypeBool(&S1_filter, S1_raw);
+    bool S2_filtered = runFilterTypeBool(&S2_filter, S2_raw);
+    bool S9A_filtered = runFilterTypeBool(&S9A_filter, S9A_raw);
+    bool S9B_filtered = runFilterTypeBool(&S9B_filter, S9B_raw);
+    bool S1_output = runMemoryTypeBool(&S1_filter, S1_filtered);
+    bool S2_output = runMemoryTypeBool(&S2_filter, S2_filtered);
+    setCoderLedA(S9A_filtered);
+    setCoderLedA(S9A_filtered);
+    setLedV1(S1_output);
+    setLedV2(S2_output);
 }
   
 // runApplication() END)
