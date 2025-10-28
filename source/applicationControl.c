@@ -74,8 +74,8 @@ void runApplication(void) {//--------------------------------------------------
     bool S2_filtered = runFilterTypeBool(&S2_filter, S2_raw);
     bool S9A_filtered = runFilterTypeBool(&S9A_filter, S9A_raw);
     bool S9B_filtered = runFilterTypeBool(&S9B_filter, S9B_raw);
-    bool S1_output = runMemoryTypeBool(&S1_filter, S1_filtered);
-    bool S2_output = runMemoryTypeBool(&S2_filter, S2_filtered);
+    bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
+    bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
     setCoderLedA(S9A_filtered);
     setCoderLedA(S9A_filtered);
     setLedV1(S1_output);
