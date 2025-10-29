@@ -34,9 +34,3 @@ bool runFilterTypeBool (filterTypeBool_t *filter, bool value){
     }
     return filter->currentValue;
 }
-
-       
-
-    
-    
-    
