@@ -77,7 +77,7 @@ void runApplication(void) {//--------------------------------------------------
     bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
     bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
     setCoderLedA(S9A_filtered);
-    setCoderLedA(S9A_filtered);
+    setCoderLedB(S9B_filtered);
     setLedV1(S1_output);
     setLedV2(S2_output);
 }
