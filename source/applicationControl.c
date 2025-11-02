@@ -59,11 +59,13 @@ void configApplication(void){//------------------------------------------------
   inputPeriod = 250;
   initFilterTypeBool (&S1_filter, false);
   initFilterTypeBool (&S2_filter, false);
+  initFilterTypeBool (&S3_filter, false);
   initFilterTypeBool (&S9A_filter, false);
   initFilterTypeBool (&S9B_filter, false);
   initMemoryTypeBool (&S1_memory, false);
   initMemoryTypeBool (&S2_memory, false);
-
+  initMemoryTypeBool (&S3_memory, false);
+  initSendGetMessageUSB();
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
