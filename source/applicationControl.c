@@ -26,6 +26,7 @@
 #include <sys/attribs.h>
 #include "platformMIS32mk.h"
 #include "debounce.h"
+#include "messengerMIS.h"
 
 //-- latform Function prototypes are in "platrformDEP32mk" ---------------------
 
@@ -42,10 +43,12 @@
 
 //--- Global vars -------------------------------------------------------------
 // **Globální instance pro funkci FLT (Filtr)**
-filterTypeBool_t S1_filter, S2_filter, S9A_filter, S9B_filter;
+filterTypeBool_t S1_filter, S2_filter, S9A_filter, S9B_filter, S3_filter;
 
 // **Globální instance pro funkci PAM?? (Toggle)**
-memoryTypeBool_t S1_memory, S2_memory;
+memoryTypeBool_t S1_memory, S2_memory, S3_memory;
+static int16_t rtmCommand = 0;
+static uint32_t sendTimer = 0;
 long inputPeriod;
 //--- External vars -----------------------------------------------------------
 
