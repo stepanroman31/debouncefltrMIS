@@ -26,6 +26,9 @@
 #include <sys/attribs.h>
 #include "platformMIS32mk.h"
 #include "debounce.h"
+#include "memory.h"
+#include "komunikace.h"
+#include "data.h"
 #include "messengerMIS.h"
 #include <stdio.h>
 
@@ -48,9 +51,6 @@ filterTypeBool_t S1_filter, S2_filter, S9A_filter, S9B_filter, S3_filter;
 
 // **Globální instance pro funkci PAM?? (Toggle)**
 memoryTypeBool_t S1_memory, S2_memory, S3_memory;
-static int16_t rtmCommand = 0;
-static uint32_t sendTimer = 0;
-static unsigned char rxMsg[17];
 long inputPeriod;
 //--- External vars -----------------------------------------------------------
 
@@ -67,7 +67,7 @@ void configApplication(void){//------------------------------------------------
   initMemoryTypeBool (&S1_memory, false);
   initMemoryTypeBool (&S2_memory, false);
   initMemoryTypeBool (&S3_memory, false);
-  initSendGetMessageUSB();
+  configRTM();
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
@@ -76,6 +76,7 @@ void runApplication(void) {//--------------------------------------------------
     bool S1_raw = getButtonS1();
     bool S2_raw = getButtonS2();
     bool S3_raw = getButtonS3();
+    int16_t potValue_raw = getPotentiometerValue();
     bool S9A_raw = getCoderChannelA();
     bool S9B_raw = getCoderChannelB();
     bool S1_filtered = runFilterTypeBool(&S1_filter, S1_raw);
@@ -86,63 +87,15 @@ void runApplication(void) {//--------------------------------------------------
     bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
     bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
     bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
-    int16_t s1_val_int = S1_output ? 1 : 0;
-    int16_t s2_val_int = S2_output ? 1 : 0;
+    setPotValue(potValue_raw);
+    setS1Output(S1_output);
+    setS2Output(S2_output);
     setCoderLedA(S9A_filtered);
     setCoderLedB(S9B_filtered);
     setLedV1(S1_output);
     setLedV2(S2_output);
     setLedV3(S3_output);
-    
-    
-    int16_t potValue = getPotentiometerValue();
-    if(potValue > 2047){
-        potValue = 2047;
-    } else if(potValue < -2047){
-        potValue = -2047;
-    }
-    
-    if(getMessageUSB(rxMsg, COM_GO) == true){
-        
-        rtmCommand = (rxMsg[MSG_LEN_IX] & RX_MESSAGE_LENGTH_MASK);
-    }
-    
-    sendTimer++;
-    
-    if (sendTimer >= 50){
-        sendTimer = 0;
-        
-    }
-    
-    switch(rtmCommand){
-        case 0:
-            break;
-        case 1:{
-            unsigned char msg[7];
-            
-            msg[0] = 3;
-            integerToBytes(potValue, &msg[1]);
-            sendMessageUSB(msg, COM_GO);
-            break;}
-        case 2:{
-            unsigned char msg2[7];
-            
-            msg2[0] = 5;
-            integerToBytes(s1_val_int, &msg2[1]);
-            integerToBytes(s2_val_int, &msg2[3]);
-           
-            break;}
-        case 3:{
-            char buffer[40];
-            
-            sprintf(buffer, "Pot: %d, S1: %d, S2: %d", potValue, s1_val_int, s2_val_int);
-            
-            sendTextTerminalMessageUSB(buffer);
-            break;}
-        default:
-            rtmCommand = 0;
-            break;
-    }
+    runRTMCommunication();
 }
   
 // runApplication() END)
