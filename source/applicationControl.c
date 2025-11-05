@@ -130,12 +130,12 @@ void runApplication(void) {//--------------------------------------------------
             msg2[0] = 5;
             integerToBytes(s1_val_int, &msg2[1]);
             integerToBytes(s2_val_int, &msg2[3]);
-            sendMessageUSB(msg2, COM_GO);
+           
             break;}
         case 3:{
             char buffer[40];
             
-            //sprintf(buffer, "Pot: %d, S1: %d, S2: %d", potValue, s1_val_int, s2_val_int);
+            sprintf(buffer, "Pot: %d, S1: %d, S2: %d", potValue, s1_val_int, s2_val_int);
             
             sendTextTerminalMessageUSB(buffer);
             break;}
