@@ -50,7 +50,7 @@ void runRTMCommunication(void) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {
-                txMsgNum[0] = 3; 
+                txMsgNum[0] = 7; 
                 integerToBytes(potValue, &txMsgNum[1]); 
                 sendMessageUSB(txMsgNum, COM_GO); 
                 break;
@@ -58,7 +58,7 @@ void runRTMCommunication(void) {
 
             case 2: // CMD(2): S1 a S2 do grafu (2x int16_t)
             {
-                txMsgNum[0] = 5; 
+                txMsgNum[0] = 7; 
                 integerToBytes(s1_val_int, &txMsgNum[1]);
                 integerToBytes(s2_val_int, &txMsgNum[3]);
                 sendMessageUSB(txMsgNum, COM_GO);
@@ -69,7 +69,7 @@ void runRTMCommunication(void) {
             {
                 char buffer[40]; 
                 sprintf(buffer, "Pot: %d, S1: %d, S2: %d", potValue, s1_val_int, s2_val_int);
-                // Pou?íváme sendTableTerminalMessageUSB, jak je definováno v hlavi?ce
+
                 sendTableTerminalMessageUSB("A1", buffer); 
                 break;
             }

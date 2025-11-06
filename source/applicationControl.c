@@ -88,8 +88,6 @@ void runApplication(void) {//--------------------------------------------------
     bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
     bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
     setPotValue(potValue_raw);
-    setS1Output(S1_output);
-    setS2Output(S2_output);
     setCoderLedA(S9A_filtered);
     setCoderLedB(S9B_filtered);
     setLedV1(S1_output);
