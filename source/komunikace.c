@@ -14,6 +14,7 @@ static unsigned short cntPerformCom = 0;
 
 static unsigned char rxMsg[MSG_MAX_NUM]; 
 static unsigned char txMsgNum[MSG_MAX_NUM];
+static unsigned char cmd3_state = 0;
 
 // --- Inicializace (Volaná jednou z configApplication) ---
 void configRTM(void) {
@@ -58,7 +59,7 @@ void runRTMCommunication(void) {
 
             case 2: // CMD(2): S1 a S2 do grafu (2x int16_t)
             {
-                txMsgNum[0] = 7; 
+                txMsgNum[0] = 5; 
                 integerToBytes(s1_val_int, &txMsgNum[1]);
                 integerToBytes(s2_val_int, &txMsgNum[3]);
                 sendMessageUSB(txMsgNum, COM_GO);
@@ -68,11 +69,34 @@ void runRTMCommunication(void) {
             case 3: // CMD(3): Do Table Terminalu
             {
                 char buffer[40]; 
-                sprintf(buffer, "Pot: %d, S1: %d, S2: %d", potValue, s1_val_int, s2_val_int);
+                switch (cmd3_state) 
+                {
+                    case 0: // Stav 0: Poslat Potenciometr
+                        sprintf(buffer, "POT: %d", getPotValue()); // Naformátuj jen ?íslo
+                        sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1 
+                        break;
+                        
+                    case 1: // Stav 1: Poslat S1
+                        sprintf(buffer, "S1: %d", getS1Output() ? 1 : 0); // Naformátuj jen ?íslo
+                        sendTableTerminalMessageUSB("1B", buffer); // Po?li do bu?ky B1
+                        break;
+                        
+                    case 2: // Stav 2: Poslat S2
+                        sprintf(buffer, "S2: %d", getS2Output() ? 1 : 0); // Naformátuj jen ?íslo
+                        sendTableTerminalMessageUSB("1C", buffer); // Po?li do bu?ky C1
+                        break;
+                }
+                
+                // Posun na dal?í stav pro p?í?tí 40ms cyklus
+                cmd3_state++;
+                if (cmd3_state > 2) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                    cmd3_state = 0;
+                }
 
-                sendTableTerminalMessageUSB("A1", buffer); 
-                break;
+                break; // Konec case 3
             }
+                break;
+            
 
             case 0: // CMD(0): Stop
             default:

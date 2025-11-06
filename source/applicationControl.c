@@ -90,6 +90,8 @@ void runApplication(void) {//--------------------------------------------------
     setPotValue(potValue_raw);
     setCoderLedA(S9A_filtered);
     setCoderLedB(S9B_filtered);
+    setS1Output(S1_output);
+    setS2Output(S2_output);
     setLedV1(S1_output);
     setLedV2(S2_output);
     setLedV3(S3_output);
