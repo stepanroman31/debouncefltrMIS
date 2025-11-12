@@ -95,7 +95,7 @@ void runApplication(void) {//--------------------------------------------------
     // Ulo?íme filtrované výstupy do appState
     bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
     bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
-    bool S3_output = runMemoryTypeBool(&S1_memory, S3_filtered);
+    bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
     setS1Output(S1_output);
     setS2Output(S2_output);
     uint8_t r1_recalc = recalculateR1(potValue_raw);

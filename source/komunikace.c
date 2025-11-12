@@ -104,7 +104,7 @@ void runRTMCommunication(void) {
                 
                 // Posun na dal?í stav pro p?í?tí 40ms cyklus
                 cmd3_state++;
-                if (cmd3_state > 4) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                if (cmd3_state > 3) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
                     cmd3_state = 0;
                 }
 
