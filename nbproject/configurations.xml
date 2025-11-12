@@ -11,6 +11,9 @@
       <itemPath>source/komunikace.h</itemPath>
       <itemPath>source/memory.h</itemPath>
       <itemPath>source/data.h</itemPath>
+      <itemPath>source/dekoder.h</itemPath>
+      <itemPath>source/deklog.h</itemPath>
+      <itemPath>source/appStateLibrary.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -30,6 +33,9 @@
       <itemPath>source/komunikace.c</itemPath>
       <itemPath>source/memory.c</itemPath>
       <itemPath>source/data.c</itemPath>
+      <itemPath>source/dekoder.c</itemPath>
+      <itemPath>source/deklog.c</itemPath>
+      <itemPath>source/appStateLibrary.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>

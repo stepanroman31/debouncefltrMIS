@@ -1,9 +1,9 @@
 #include "komunikace.h"
-#include "data.h"
+#include "appStateLibrary.h"
 #include "messengerMIS.h"
 #include <stdio.h>
 
-#define RTM_SEND_PERIOD_MS 40 
+#define RTM_SEND_PERIOD_MS 50 
 #define MSG_MAX_NUM 17 
 #define RTM_RX_INTEGER_MSG_LENGTH 7 
 #define COM_GO false
@@ -22,7 +22,7 @@ void configRTM(void) {
 }
 // --- Hlavní funkce RTM (Volaná ka?dou 1 ms z runApplication) ---
 void runRTMCommunication(void) {
-    
+    app_state_t *app_state = get_app_state_address();
     // 1. PRIJEM POVELU (Dekódování CMD z datových bajt?)
     if (getMessageUSB(rxMsg, COM_GO) == true) {
         
@@ -43,16 +43,20 @@ void runRTMCommunication(void) {
         cntPerformCom = 0;
         
         // Získání dat z datového modelu
-        int16_t potValue = getPotValue();
-        int16_t s1_val_int = getS1Output() ? 1 : 0;
-        int16_t s2_val_int = getS2Output() ? 1 : 0;
+        uint8_t switched_val = app_state->pwm_0.input;
+        int16_t s1_val_int = app_state->button_s1.outputMemory ? 1 : 0;
+        int16_t s2_val_int = app_state->button_s2.outputMemory ? 1 : 0;
+        int16_t v9_val_int = app_state->decoder_0.isMin ? 1 : 0;
+        int16_t v12_val_int = app_state->decoder_0.isMax ? 1 : 0;
         
         switch (rtmCommand) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {
                 txMsgNum[0] = 7; 
-                integerToBytes(potValue, &txMsgNum[1]); 
+                integerToBytes((int16_t)switched_val, &txMsgNum[1]);
+                integerToBytes(v9_val_int, &txMsgNum[3]);
+                integerToBytes(v12_val_int, &txMsgNum[5]);
                 sendMessageUSB(txMsgNum, COM_GO); 
                 break;
             }
@@ -72,18 +76,22 @@ void runRTMCommunication(void) {
                 switch (cmd3_state) 
                 {
                     case 0: // Stav 0: Poslat Potenciometr
-                        sprintf(buffer, "POT: %d", getPotValue()); // Naformátuj jen ?íslo
-                        sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1 
+                        sprintf(buffer, "POT: %d", switched_val);
+                        sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1
+                        sprintf(buffer, "S1: %d", s1_val_int);// Naformátuj jen ?íslo
+                        sendTableTerminalMessageUSB("1B", buffer);
                         break;
                         
                     case 1: // Stav 1: Poslat S1
-                        sprintf(buffer, "S1: %d", getS1Output() ? 1 : 0); // Naformátuj jen ?íslo
-                        sendTableTerminalMessageUSB("1B", buffer); // Po?li do bu?ky B1
+                        sprintf(buffer, "S2: %d", s2_val_int);
+                        sendTableTerminalMessageUSB("1C", buffer); // Po?li do bu?ky B1
+                        sprintf(buffer, "S3: %d", v9_val_int);
+                         sendTableTerminalMessageUSB("1D", buffer);
                         break;
                         
                     case 2: // Stav 2: Poslat S2
-                        sprintf(buffer, "S2: %d", getS2Output() ? 1 : 0); // Naformátuj jen ?íslo
-                        sendTableTerminalMessageUSB("1C", buffer); // Po?li do bu?ky C1
+                        sprintf(buffer, "S4: %d", v12_val_int);
+                        sendTableTerminalMessageUSB("1E", buffer);
                         break;
                 }
                 

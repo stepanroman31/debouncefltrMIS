@@ -28,9 +28,11 @@
 #include "debounce.h"
 #include "memory.h"
 #include "komunikace.h"
-#include "data.h"
 #include "messengerMIS.h"
 #include <stdio.h>
+#include "dekoder.h"
+#include "appStateLibrary.h"
+#include "deklog.h"
 
 //-- latform Function prototypes are in "platrformDEP32mk" ---------------------
 
@@ -51,6 +53,7 @@ filterTypeBool_t S1_filter, S2_filter, S9A_filter, S9B_filter, S3_filter;
 
 // **Globální instance pro funkci PAM?? (Toggle)**
 memoryTypeBool_t S1_memory, S2_memory, S3_memory;
+extern uint8_t s9_counter;
 long inputPeriod;
 //--- External vars -----------------------------------------------------------
 
@@ -58,6 +61,7 @@ long inputPeriod;
 
 void configApplication(void){//------------------------------------------------
   //--- User defined functions ---
+  init_app_state();
   inputPeriod = 250;
   initFilterTypeBool (&S1_filter, false);
   initFilterTypeBool (&S2_filter, false);
@@ -67,34 +71,48 @@ void configApplication(void){//------------------------------------------------
   initMemoryTypeBool (&S1_memory, false);
   initMemoryTypeBool (&S2_memory, false);
   initMemoryTypeBool (&S3_memory, false);
+  initDecoder();
   configRTM();
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
 
 void runApplication(void) {//--------------------------------------------------
-    bool S1_raw = getButtonS1();
-    bool S2_raw = getButtonS2();
-    bool S3_raw = getButtonS3();
-    int16_t potValue_raw = getPotentiometerValue();
+ // Získáme ukazatel na na?i centrální "nást?nku"
+    app_state_t *app_state = get_app_state_address();
+
+    // === 1. ?ÁST: ?tení HW a zápis do appState ===
+    app_state->button_s1.filter.input = getButtonS1();
+    app_state->button_s2.filter.input = getButtonS2();
+    app_state->button_s3.filter.input = getButtonS3();
+    app_state->adc_0.inputUnformatted = getPotentiometerValue();
     bool S9A_raw = getCoderChannelA();
     bool S9B_raw = getCoderChannelB();
-    bool S1_filtered = runFilterTypeBool(&S1_filter, S1_raw);
-    bool S2_filtered = runFilterTypeBool(&S2_filter, S2_raw);
-    bool S3_filtered = runFilterTypeBool(&S3_filter, S3_raw);
+    bool S1_filtered = runFilterTypeBool(&S1_filter, app_state->button_s1.filter.input);
+    bool S2_filtered = runFilterTypeBool(&S2_filter, app_state->button_s2.filter.input);
+    bool S3_filtered = runFilterTypeBool(&S3_filter, app_state->button_s3.filter.input);
     bool S9A_filtered = runFilterTypeBool(&S9A_filter, S9A_raw);
     bool S9B_filtered = runFilterTypeBool(&S9B_filter, S9B_raw);
-    bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
-    bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
-    bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
-    setPotValue(potValue_raw);
-    setCoderLedA(S9A_filtered);
-    setCoderLedB(S9B_filtered);
-    setS1Output(S1_output);
-    setS2Output(S2_output);
-    setLedV1(S1_output);
-    setLedV2(S2_output);
-    setLedV3(S3_output);
+    // Ulo?íme filtrované výstupy do appState
+    app_state->decoder_0.outAFiltered = S9A_filtered;
+    app_state->decoder_0.outBFiltered = S9B_filtered;
+    app_state->button_s1.outputMemory = runMemoryTypeBool(&S1_memory, S1_filtered);
+    app_state->button_s2.outputMemory = runMemoryTypeBool(&S2_memory, S2_filtered);
+    app_state->button_s3.outputMemory = runMemoryTypeBool(&S3_memory, S3_filtered);
+    runDecoder(S9A_filtered, S9B_filtered); // Aktualizuje globální s9_counter
+    app_state->decoder_0.outputInBaseRange = s9_counter;
+    app_state->adc_0.outputInBaseRange = recalculateR1(app_state->adc_0.inputUnformatted);
+    uint8_t switched_val = getSwitchedOutput(
+        app_state->button_s2.outputMemory, 
+        app_state->adc_0.outputInBaseRange, 
+        app_state->decoder_0.outputInBaseRange
+    );
+    runLimitIndicators(switched_val);
+    setLedV1(app_state->button_s1.outputMemory); 
+    setLedV2(app_state->button_s2.outputMemory); 
+    setCoderLedA(S9A_filtered); 
+    setCoderLedB(S9B_filtered); 
+    setFpgaVxValue(switched_val); // Zobrazení hodnoty na LED V13-V24
     runRTMCommunication();
 }
   

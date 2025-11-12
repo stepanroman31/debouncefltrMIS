@@ -17,5 +17,15 @@ bool getS1Output(void);
 void setS2Output(bool state);
 bool getS2Output(void);
 
+// Nové settery a gettery pro DEK
+void setSwitchedOutput(uint8_t value);
+uint8_t getSwitchedOutput(void);
+
+void setLedV9(bool state);
+bool getLedV9(void);
+
+void setLedV12(bool state);
+bool getLedV12(void);
+
 #endif	/* DATA_H */
 
