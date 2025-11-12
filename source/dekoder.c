@@ -23,9 +23,9 @@ void runDecoder(bool A_filtered, bool B_filtered) {
         
         // Logika pro ur?ení sm?ru (CW = po sm?ru hod. ru?i?ek)
         // CW p?echody: 00->01, 01->11, 11->10, 10->00
-        if ( (last_state == 0 && current_state == 1) || \
-             (last_state == 1 && current_state == 3) || \
-             (last_state == 3 && current_state == 2) || \
+        if ( (last_state == 0 && current_state == 1) ||
+             (last_state == 1 && current_state == 3) ||
+             (last_state == 3 && current_state == 2) ||
              (last_state == 2 && current_state == 0) ) 
         {
             // Sm?r CW: Inkrementace (s kontrolou p?ete?ení)
@@ -34,9 +34,9 @@ void runDecoder(bool A_filtered, bool B_filtered) {
             }
         }
         // CCW p?echody: 00->10, 10->11, 11->01, 01->00
-        else if ( (last_state == 0 && current_state == 2) || \
-                  (last_state == 2 && current_state == 3) || \
-                  (last_state == 3 && current_state == 1) || \
+        else if ( (last_state == 0 && current_state == 2) ||
+                  (last_state == 2 && current_state == 3) ||
+                  (last_state == 3 && current_state == 1) ||
                   (last_state == 1 && current_state == 0) )
         {
             // Sm?r CCW: Dekrementace (s kontrolou podte?ení)

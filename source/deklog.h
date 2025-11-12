@@ -18,7 +18,7 @@ uint8_t recalculateR1(int16_t potValue);
  * @param s9_counter Hodnota ?íta?e S9 (0-255).
  * @return Finální "p?epnutá" hodnota (0-255).
  */
-uint8_t getSwitchedOutput(bool S2_output, uint8_t r1_recalc, uint8_t s9_counter);
+uint8_t runSwitchedOutputLogic(bool S2_output, uint8_t r1_recalc, uint8_t s9_counter);
 
 /**
  * @brief Procedura pro ovládání LED V9 (Min) a V12 (Max) a aktualizaci datového modelu.

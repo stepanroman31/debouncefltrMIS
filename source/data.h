@@ -8,9 +8,6 @@
 #include <stdint.h>
 
 // Deklarace globalnich getteru a setteru pro data
-void setPotValue(int16_t value);
-int16_t getPotValue(void);
-
 void setS1Output(bool state);
 bool getS1Output(void);
 
@@ -26,6 +23,9 @@ bool getLedV9(void);
 
 void setLedV12(bool state);
 bool getLedV12(void);
+
+void setRtmCommand(signed short cmd);
+signed short getRtmCommand(void);
 
 #endif	/* DATA_H */
 

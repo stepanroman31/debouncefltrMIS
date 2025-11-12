@@ -13,7 +13,6 @@
       <itemPath>source/data.h</itemPath>
       <itemPath>source/dekoder.h</itemPath>
       <itemPath>source/deklog.h</itemPath>
-      <itemPath>source/appStateLibrary.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -35,7 +34,6 @@
       <itemPath>source/data.c</itemPath>
       <itemPath>source/dekoder.c</itemPath>
       <itemPath>source/deklog.c</itemPath>
-      <itemPath>source/appStateLibrary.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -314,7 +312,6 @@
         <property key="event.recorder.debugger.behavior" value="Running"/>
         <property key="event.recorder.enabled" value="false"/>
         <property key="event.recorder.scvd.files" value=""/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="lastid" value=""/>
         <property key="memories.aux" value="false"/>

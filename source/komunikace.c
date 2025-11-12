@@ -1,7 +1,11 @@
 #include "komunikace.h"
-#include "appStateLibrary.h"
+#include "data.h"
 #include "messengerMIS.h"
 #include <stdio.h>
+#include "deklog.h"
+#include <stdint.h>
+#include <stdbool.h>
+
 
 #define RTM_SEND_PERIOD_MS 50 
 #define MSG_MAX_NUM 17 
@@ -22,7 +26,6 @@ void configRTM(void) {
 }
 // --- Hlavní funkce RTM (Volaná ka?dou 1 ms z runApplication) ---
 void runRTMCommunication(void) {
-    app_state_t *app_state = get_app_state_address();
     // 1. PRIJEM POVELU (Dekódování CMD z datových bajt?)
     if (getMessageUSB(rxMsg, COM_GO) == true) {
         
@@ -38,16 +41,16 @@ void runRTMCommunication(void) {
             }
         }
     }
-    // 2. ODESILANI DAT (perioda 40 ms)
+    // 2. ODESILANI DAT (perioda 50 ms)
     if (cntPerformCom++ >= RTM_SEND_PERIOD_MS) {
         cntPerformCom = 0;
         
         // Získání dat z datového modelu
-        uint8_t switched_val = app_state->pwm_0.input;
-        int16_t s1_val_int = app_state->button_s1.outputMemory ? 1 : 0;
-        int16_t s2_val_int = app_state->button_s2.outputMemory ? 1 : 0;
-        int16_t v9_val_int = app_state->decoder_0.isMin ? 1 : 0;
-        int16_t v12_val_int = app_state->decoder_0.isMax ? 1 : 0;
+        uint8_t switched_val = getSwitchedOutput();
+        int16_t s1_val_int = getS1Output() ? 1 : 0;
+        int16_t s2_val_int = getS2Output() ? 1 : 0;
+        int16_t v9_val_int = getLedV9() ? 1 : 0;
+        int16_t v12_val_int = getLedV12() ? 1 : 0;
         
         switch (rtmCommand) {
             
@@ -78,26 +81,30 @@ void runRTMCommunication(void) {
                     case 0: // Stav 0: Poslat Potenciometr
                         sprintf(buffer, "POT: %d", switched_val);
                         sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1
-                        sprintf(buffer, "S1: %d", s1_val_int);// Naformátuj jen ?íslo
-                        sendTableTerminalMessageUSB("1B", buffer);
                         break;
                         
                     case 1: // Stav 1: Poslat S1
-                        sprintf(buffer, "S2: %d", s2_val_int);
-                        sendTableTerminalMessageUSB("1C", buffer); // Po?li do bu?ky B1
-                        sprintf(buffer, "S3: %d", v9_val_int);
-                         sendTableTerminalMessageUSB("1D", buffer);
+                        sprintf(buffer, "S1: %d", s1_val_int);// Naformátuj jen ?íslo
+                        sendTableTerminalMessageUSB("2A", buffer);
                         break;
                         
                     case 2: // Stav 2: Poslat S2
-                        sprintf(buffer, "S4: %d", v12_val_int);
-                        sendTableTerminalMessageUSB("1E", buffer);
+                        sprintf(buffer, "S2: %d", s2_val_int);
+                        sendTableTerminalMessageUSB("3A", buffer);
+                        break;
+                    case 3:
+                        sprintf(buffer, "V9: %d", v9_val_int);
+                        sendTableTerminalMessageUSB("4A", buffer);
+                        break;
+                    case 4:
+                        sprintf(buffer, "V12: %d", v12_val_int);
+                        sendTableTerminalMessageUSB("5A", buffer);
                         break;
                 }
                 
                 // Posun na dal?í stav pro p?í?tí 40ms cyklus
                 cmd3_state++;
-                if (cmd3_state > 2) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                if (cmd3_state > 4) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
                     cmd3_state = 0;
                 }
 
