@@ -79,7 +79,7 @@ void runRTMCommunication(void) {
                 switch (cmd3_state) 
                 {
                     case 0: // Stav 0: Poslat Potenciometr
-                        sprintf(buffer, "POT: %d", switched_val);
+                        sprintf(buffer, "Output: %d", switched_val);
                         sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1
                         break;
                         
@@ -104,7 +104,7 @@ void runRTMCommunication(void) {
                 
                 // Posun na dal?í stav pro p?í?tí 40ms cyklus
                 cmd3_state++;
-                if (cmd3_state > 3) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                if (cmd3_state > 4) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
                     cmd3_state = 0;
                 }
 
