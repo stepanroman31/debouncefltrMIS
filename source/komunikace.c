@@ -14,12 +14,12 @@
 #define COM_GO false
 
 // === GLOBALNI STAVY PRO RTM MODUL ===
-signed short rtmCommand = 0;
 static unsigned short cntPerformCom = 0; 
 
 static unsigned char rxMsg[MSG_MAX_NUM]; 
 static unsigned char txMsgNum[MSG_MAX_NUM];
 static unsigned char cmd3_state = 0;
+signed short rtmCommand = 0;
 
 // --- Inicializace (Volaná jednou z configApplication) ---
 void configRTM(void) {
@@ -39,7 +39,8 @@ void runRTMCommunication(void) {
             signed short param1 = bytesToInteger(&rxMsg[3]);
             
             if (receivedCmd >= 0 && receivedCmd <= 4) {
-                rtmCommand = receivedCmd; 
+                rtmCommand = receivedCmd;
+                setRtmCommand(receivedCmd);
             }
             if (receivedCmd == 4) {
                 // P?ekontrolujeme limity (0-255) a ulo?íme hodnotu z PC
