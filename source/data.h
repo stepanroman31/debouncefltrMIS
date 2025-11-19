@@ -11,6 +11,9 @@
 void setS1Output(bool state);
 bool getS1Output(void);
 
+void setS3Output(bool state);
+bool getS3Output(void);
+
 void setS2Output(bool state);
 bool getS2Output(void);
 

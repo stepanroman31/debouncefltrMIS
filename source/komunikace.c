@@ -49,6 +49,7 @@ void runRTMCommunication(void) {
         uint8_t switched_val = getSwitchedOutput();
         int16_t s1_val_int = getS1Output() ? 1 : 0;
         int16_t s2_val_int = getS2Output() ? 1 : 0;
+        int16_t s3_val_int = getS3Output() ? 1 : 0;
         int16_t v9_val_int = getLedV9() ? 1 : 0;
         int16_t v12_val_int = getLedV12() ? 1 : 0;
         
@@ -69,6 +70,7 @@ void runRTMCommunication(void) {
                 txMsgNum[0] = 5; 
                 integerToBytes(s1_val_int, &txMsgNum[1]);
                 integerToBytes(s2_val_int, &txMsgNum[3]);
+                integerToBytes(s3_val_int, &txMsgNum[5]);
                 sendMessageUSB(txMsgNum, COM_GO);
                 break;
             }
@@ -93,18 +95,22 @@ void runRTMCommunication(void) {
                         sendTableTerminalMessageUSB("3A", buffer);
                         break;
                     case 3:
-                        sprintf(buffer, "V9: %d", v9_val_int);
+                        sprintf(buffer, "S3: %d", s3_val_int);
                         sendTableTerminalMessageUSB("4A", buffer);
                         break;
                     case 4:
-                        sprintf(buffer, "V12: %d", v12_val_int);
+                        sprintf(buffer, "V9: %d", v9_val_int);
                         sendTableTerminalMessageUSB("5A", buffer);
+                        break;
+                    case 5:
+                        sprintf(buffer, "V12: %d", v12_val_int);
+                        sendTableTerminalMessageUSB("6A", buffer);
                         break;
                 }
                 
                 // Posun na dal?í stav pro p?í?tí 40ms cyklus
                 cmd3_state++;
-                if (cmd3_state > 4) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                if (cmd3_state > 5) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
                     cmd3_state = 0;
                 }
 

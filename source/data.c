@@ -3,6 +3,7 @@
 static int16_t potValue_i = 0;
 static bool S1_output_i = false;
 static bool S2_output_i = false;
+static bool S3_output_i = false;
 
 // Settery
 void setPotValue(int16_t value) {
@@ -21,6 +22,9 @@ void setS1Output(bool state) {
 
 void setS2Output(bool state) {
     S2_output_i = state;
+}
+void setS3Output(bool state) {
+    S3_output_i = state;
 }
 
 // Gettery

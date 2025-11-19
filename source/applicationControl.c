@@ -98,6 +98,7 @@ void runApplication(void) {//--------------------------------------------------
     bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
     setS1Output(S1_output);
     setS2Output(S2_output);
+    setS3Output(S3_output);
     uint8_t r1_recalc = recalculateR1(potValue_raw);
     runDecoder(S9A_filtered, S9B_filtered); // Aktualizuje globální s9_counte
     uint8_t switched_val = runSwitchedOutputLogic(
