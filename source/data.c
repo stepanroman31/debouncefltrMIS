@@ -4,6 +4,8 @@ static int16_t potValue_i = 0;
 static bool S1_output_i = false;
 static bool S2_output_i = false;
 static bool S3_output_i = false;
+static uint8_t RtmParameter = 0;
+static signed short RtmCommand = 0;
 
 // Settery
 void setPotValue(int16_t value) {
@@ -39,6 +41,9 @@ bool getS1Output(void) {
 bool getS2Output(void) {
     return S2_output_i;
 }
+bool getS3Output(void) {
+    return S3_output_i;
+}
 
 // Nové statické prom?nné
 static uint8_t switched_output_i = 0;
@@ -65,4 +70,17 @@ bool getLedV9(void) {
 }
 bool getLedV12(void) {
     return led_v12_i;
+}
+void setRtmParameter(uint8_t value) {
+    // Vstup u? je o?et?en na 0-255 v rtm_com.c
+    RtmParameter = value;
+}
+uint8_t getRtmParameter(void) {
+    return RtmParameter;
+}
+void setRtmCommand(signed short cmd) {
+    RtmCommand = cmd;
+}
+signed short getRtmCommand(void) {
+    return RtmCommand;
 }

@@ -33,6 +33,7 @@
 #include "dekoder.h"
 #include "data.h"
 #include "deklog.h"
+#include "pwmmod.h"
 
 //-- latform Function prototypes are in "platrformDEP32mk" ---------------------
 
@@ -106,7 +107,19 @@ void runApplication(void) {//--------------------------------------------------
         r1_recalc,     // Hodnota R1 (0-255)
         s9_counter     // Hodnota S9 (0-255)
     );
+    uint8_t final_pwm_input;
+if (S1_output == true && getRtmCommand() == 4) {
+    // LED V1 svítí A povel CMD(4) je aktivní -> Vstup pro PWM bere hodnotu z PC
+    final_pwm_input = getRtmParameter();
+} else {
+    // Standardní ?ízení DEK logikou
+    final_pwm_input = runFinalSwitchLogic(S3_output, switched_val); 
+}
+
+// --- Nastavení st?ídy PWM ---
+updatePwm(final_pwm_input);
     runLimitIndicators(switched_val);
+    updatePwm(final_pwm_input);
     setLedV1(S1_output); 
     setLedV2(S2_output); 
     setLedV3(S3_output);

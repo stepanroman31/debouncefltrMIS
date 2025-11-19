@@ -5,6 +5,7 @@
 #include "deklog.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "pwmmod.h"
 
 
 #define RTM_SEND_PERIOD_MS 50 
@@ -35,10 +36,16 @@ void runRTMCommunication(void) {
         {
             // Povel je int16_t, za?íná na indexu [1]
             signed short receivedCmd = bytesToInteger(&rxMsg[1]);
+            signed short param1 = bytesToInteger(&rxMsg[3]);
             
-            if (receivedCmd >= 0 && receivedCmd <= 3) {
+            if (receivedCmd >= 0 && receivedCmd <= 4) {
                 rtmCommand = receivedCmd; 
             }
+            if (receivedCmd == 4) {
+                // P?ekontrolujeme limity (0-255) a ulo?íme hodnotu z PC
+                if (param1 >= 0 && param1 <= 255) {
+                    setRtmParameter(param1); // Ulo?ení hodnoty z PC pro pou?ití v runApplication
+                }
         }
     }
     // 2. ODESILANI DAT (perioda 50 ms)
@@ -52,6 +59,7 @@ void runRTMCommunication(void) {
         int16_t s3_val_int = getS3Output() ? 1 : 0;
         int16_t v9_val_int = getLedV9() ? 1 : 0;
         int16_t v12_val_int = getLedV12() ? 1 : 0;
+        signed short rtmCommand = getRtmCommand();
         
         switch (rtmCommand) {
             
@@ -67,7 +75,7 @@ void runRTMCommunication(void) {
 
             case 2: // CMD(2): S1 a S2 do grafu (2x int16_t)
             {
-                txMsgNum[0] = 5; 
+                txMsgNum[0] = 7; 
                 integerToBytes(s1_val_int, &txMsgNum[1]);
                 integerToBytes(s2_val_int, &txMsgNum[3]);
                 integerToBytes(s3_val_int, &txMsgNum[5]);
@@ -116,8 +124,17 @@ void runRTMCommunication(void) {
 
                 break; // Konec case 3
             }
+            case 4:
+            {
+                // Vstup do modulátoru (p?ijat z PC, ale odesíláme ho zp?t pro vizualizaci)
+                uint8_t rtm_input = getRtmParameter(); 
+                
+                // Zpráva pro 1x int16_t = délka 3 bajty
+                txMsgNum[0] = 3; 
+                integerToBytes(rtm_input, &txMsgNum[1]);
+                sendMessageUSB(txMsgNum, COM_GO);
                 break;
-            
+            }
 
             case 0: // CMD(0): Stop
             default:
@@ -126,6 +143,7 @@ void runRTMCommunication(void) {
     }
     
     
+}
 }
 
     

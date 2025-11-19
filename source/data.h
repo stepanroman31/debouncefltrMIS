@@ -17,6 +17,9 @@ bool getS3Output(void);
 void setS2Output(bool state);
 bool getS2Output(void);
 
+void setRtmParameter(uint8_t value);
+uint8_t getRtmParameter(void);
+
 // Nové settery a gettery pro DEK
 void setSwitchedOutput(uint8_t value);
 uint8_t getSwitchedOutput(void);

@@ -44,3 +44,10 @@ void runLimitIndicators(uint8_t switched_val) {
     setLedV12(led_v12_state);
     setSwitchedOutput(switched_val); 
 }
+uint8_t runFinalSwitchLogic(bool S3_output, uint8_t switched_val) {
+    if (S3_output == true) { // LED V3 svítí -> Propustit signál
+        return switched_val;
+    } else { // LED V3 nesvítí -> Nula [cite: 130]
+        return 0;
+    }
+}

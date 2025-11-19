@@ -26,5 +26,6 @@ uint8_t runSwitchedOutputLogic(bool S2_output, uint8_t r1_recalc, uint8_t s9_cou
  * @param switched_val Finální hodnota (0-255) z p?epína?e.
  */
 void runLimitIndicators(uint8_t switched_val);
+uint8_t runFinalSwitchLogic(bool S3_output, uint8_t switched_val);
 
 #endif // DEK_LOGIC_H
