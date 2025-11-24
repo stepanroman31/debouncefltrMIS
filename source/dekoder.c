@@ -30,7 +30,7 @@ void runDecoder(bool A_filtered, bool B_filtered) {
         {
             // Sm?r CW: Inkrementace (s kontrolou p?ete?ení)
             if (s9_counter < 255) {
-                s9_counter++;
+                s9_counter--;
             }
         }
         // CCW p?echody: 00->10, 10->11, 11->01, 01->00
@@ -41,7 +41,7 @@ void runDecoder(bool A_filtered, bool B_filtered) {
         {
             // Sm?r CCW: Dekrementace (s kontrolou podte?ení)
             if (s9_counter > 0) {
-                s9_counter--;
+                s9_counter++;
             }
         }
         
