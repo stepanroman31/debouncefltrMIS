@@ -29,7 +29,7 @@ void runDecoder(bool A_filtered, bool B_filtered) {
              (last_state == 2 && current_state == 0) ) 
         {
             // Sm?r CW: Inkrementace (s kontrolou p?ete?ení)
-            if (s9_counter < 255) {
+            if (s9_counter < 0) {
                 s9_counter--;
             }
         }
@@ -40,7 +40,7 @@ void runDecoder(bool A_filtered, bool B_filtered) {
                   (last_state == 1 && current_state == 0) )
         {
             // Sm?r CCW: Dekrementace (s kontrolou podte?ení)
-            if (s9_counter > 0) {
+            if (s9_counter > 255) {
                 s9_counter++;
             }
         }
