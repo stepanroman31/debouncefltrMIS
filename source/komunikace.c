@@ -39,13 +39,12 @@ void runRTMCommunication(void) {
             signed short param1 = bytesToInteger(&rxMsg[3]);
             
             if (receivedCmd >= 0 && receivedCmd <= 4) {
-                rtmCommand = receivedCmd;
                 setRtmCommand(receivedCmd);
             }
             if (receivedCmd == 4) {
                 // P?ekontrolujeme limity (0-255) a ulo?íme hodnotu z PC
                 if (param1 >= 0 && param1 <= 255) {
-                    setRtmParameter(param1); // Ulo?ení hodnoty z PC pro pou?ití v runApplication
+                    setRtmParameter((uint8_t)param1); // Ulo?ení hodnoty z PC pro pou?ití v runApplication
                 }
         }
     }
@@ -132,7 +131,7 @@ void runRTMCommunication(void) {
                 
                 // Zpráva pro 1x int16_t = délka 3 bajty
                 txMsgNum[0] = 3; 
-                integerToBytes(rtm_input, &txMsgNum[1]);
+                integerToBytes((int16_t)rtm_input, &txMsgNum[1]);
                 sendMessageUSB(txMsgNum, COM_GO);
                 break;
             }

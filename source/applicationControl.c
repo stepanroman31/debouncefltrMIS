@@ -74,6 +74,7 @@ void configApplication(void){//------------------------------------------------
   initDecoder();
   configRTM();
   setAdcTrigger(1000);
+  initPwm();
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
@@ -125,7 +126,7 @@ updatePwm(final_pwm_input);
     setLedV3(S3_output);
     setCoderLedA(S9A_filtered); 
     setCoderLedB(S9B_filtered); 
-    setFpgaVxValue(switched_val); // Zobrazení hodnoty na LED V13-V24
+    setFpgaVxValue(final_pwm_input); // Zobrazení hodnoty na LED V13-V24
     runRTMCommunication();
 }
   
