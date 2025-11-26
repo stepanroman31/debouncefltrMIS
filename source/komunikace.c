@@ -14,12 +14,12 @@
 #define COM_GO false
 
 // === GLOBALNI STAVY PRO RTM MODUL ===
-static unsigned short cntPerformCom = 0; 
+static unsigned char cntPerformCom = 0; 
 
 static unsigned char rxMsg[MSG_MAX_NUM]; 
 static unsigned char txMsgNum[MSG_MAX_NUM];
 static unsigned char cmd3_state = 0;
-signed short rtmCommand = 0;
+//signed short rtmCommand = 0;
 
 // --- Inicializace (Volaná jednou z configApplication) ---
 void configRTM(void) {
@@ -31,7 +31,7 @@ void runRTMCommunication(void) {
     if (getMessageUSB(rxMsg, COM_GO) == true) {
         
         // Zpracujeme jen, pokud zpráva má správnou délku a typ (INT Command)
-        if ( (rxMsg[0] & RX_MESSAGE_LENGTH_MASK) == RTM_RX_INTEGER_MSG_LENGTH &&
+        if ( (rxMsg[0] & RX_MESSAGE_LENGTH_MASK) == RTM_RX_INTEGER_MSG_LENGTH  &&
              (rxMsg[MSG_LEN_IX] & RX_MESSAGE_TYPE_MASK) == RX_FROM__COMMAND_EDITOR ) 
         {
             // Povel je int16_t, za?íná na indexu [1]
@@ -49,7 +49,8 @@ void runRTMCommunication(void) {
         }
     }
     // 2. ODESILANI DAT (perioda 50 ms)
-    if (cntPerformCom++ >= RTM_SEND_PERIOD_MS) {
+        cntPerformCom++;
+    if (cntPerformCom >= RTM_SEND_PERIOD_MS ) {
         cntPerformCom = 0;
         
         // Získání dat z datového modelu
@@ -59,9 +60,9 @@ void runRTMCommunication(void) {
         int16_t s3_val_int = getS3Output() ? 1 : 0;
         int16_t v9_val_int = getLedV9() ? 1 : 0;
         int16_t v12_val_int = getLedV12() ? 1 : 0;
-        signed short rtmCommand = getRtmCommand();
+        signed short activeCmd = getRtmCommand();
         
-        switch (rtmCommand) {
+        switch (activeCmd) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {
