@@ -5,7 +5,7 @@ static bool S1_output_i = false;
 static bool S2_output_i = false;
 static bool S3_output_i = false;
 static uint8_t RtmParameter = 0;
-static signed short RtmComm = 0;
+static signed short RtmCommand = 0;
 
 // Settery
 void setPotValue(int16_t value) {
@@ -78,9 +78,9 @@ void setRtmParameter(uint8_t value) {
 uint8_t getRtmParameter(void) {
     return RtmParameter;
 }
-void setRtmComm(signed short cmd) {
-    RtmComm = cmd;
+void setRtmCommand(signed short cmd) {
+    RtmCommand = cmd;
 }
-signed short getRtmComm(void) {
-    return RtmComm;
+signed short getRtmCommand(void) {
+    return RtmCommand;
 }

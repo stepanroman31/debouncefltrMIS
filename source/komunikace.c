@@ -39,12 +39,12 @@ void runRTMCommunication(void) {
             signed short param1 = bytesToInteger(&rxMsg[3]);
             
             if (receivedCmd >= 0 && receivedCmd <= 4) {
-                rtmCommand = receivedCmd;
+                setRtmCommand(receivedCmd);
             }
             if (receivedCmd == 4) {
                 // P?ekontrolujeme limity (0-255) a ulo?íme hodnotu z PC
                 if (param1 >= 0 && param1 <= 255) {
-                    setRtmParameter((uint8_t)param1); // Ulo?ení hodnoty z PC pro pou?ití v runApplication
+                    setRtmParameter((uint8_t)param1);// Ulo?ení hodnoty z PC pro pou?ití v runApplication
                 }
         }
     }
@@ -55,6 +55,7 @@ void runRTMCommunication(void) {
         cntPerformCom = 0;
         
         // Získání dat z datového modelu
+        signed short activeCmd = getRtmCommand();
         uint8_t switched_val = getSwitchedOutput();
         int16_t s1_val_int = getS1Output() ? 1 : 0;
         int16_t s2_val_int = getS2Output() ? 1 : 0;
@@ -62,7 +63,7 @@ void runRTMCommunication(void) {
         int16_t v9_val_int = getLedV9() ? 1 : 0;
         int16_t v12_val_int = getLedV12() ? 1 : 0;
         
-        switch (rtmCommand) {
+        switch (activeCmd) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {

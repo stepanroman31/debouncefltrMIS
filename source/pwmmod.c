@@ -16,10 +16,10 @@ void initPwm(void) {
 
     // 2. Nastavení Output Compare 16 (Bod 10a, 10c)
     OC16CON = 0;            // Vypnout OC16
-    OC16CONbits.OCTSEL = 0; // Zdroj je Timer 2
+    OC16CONbits.OCTSEL = 1; // Zdroj je Timer 2
     OC16CONbits.OCM = 0b110;// PWM mód bez fault protection
-    OC16RS = PWM_MIN_TICKS; // Výchozí st?ída (1 ms)
-    OC16R = PWM_MIN_TICKS;  
+    OC16RS = 938; // Výchozí st?ída (1 ms)
+    OC16R = 938;  
     
     // 3. Zapnutí
     T3CONbits.ON = 1;       // Zapnout Timer 2

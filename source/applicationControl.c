@@ -109,7 +109,7 @@ void runApplication(void) {//--------------------------------------------------
         s9_counter     // Hodnota S9 (0-255)
     );
     uint8_t final_pwm_input;
-if (S1_output == true && getRtmComm() == 4) {
+if (S1_output == true && getRtmCommand() == 4) {
     // LED V1 svítí A povel CMD(4) je aktivní -> Vstup pro PWM bere hodnotu z PC
     final_pwm_input = getRtmParameter();
 } else {
