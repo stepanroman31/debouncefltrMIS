@@ -7,11 +7,12 @@
 #define PWM_MAX_TICKS 1875      // 2 ms
 
 void initPwm(void) {
+    
     // 1. Nastavení TIMER 2 (Bod 10d)
-    T2CON = 0;              // Vypnout Timer 2
-    T2CONbits.TCKPS = 0b110;// Prescaler 1:64 (pro 20ms periodu)
-    PR2 = PWM_PERIOD_TICKS; // Perioda
-    TMR2 = 0;               // Reset ?íta?e
+    T3CON = 0;              // Vypnout Timer 2
+    T3CONbits.TCKPS = 0b110;// Prescaler 1:64 (pro 20ms periodu)
+    PR3 = PWM_PERIOD_TICKS; // Perioda
+    TMR3 = 0;               // Reset ?íta?e
 
     // 2. Nastavení Output Compare 16 (Bod 10a, 10c)
     OC16CON = 0;            // Vypnout OC16
@@ -21,7 +22,7 @@ void initPwm(void) {
     OC16R = PWM_MIN_TICKS;  
     
     // 3. Zapnutí
-    T2CONbits.ON = 1;       // Zapnout Timer 2
+    T3CONbits.ON = 1;       // Zapnout Timer 2
     OC16CONbits.ON = 1;     // Zapnout OC16
     RPE1Rbits.RPE1R = 11; // 11 = OC16 (podle datasheetu PIC32MK)
 }

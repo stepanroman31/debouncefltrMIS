@@ -14,12 +14,12 @@
 #define COM_GO false
 
 // === GLOBALNI STAVY PRO RTM MODUL ===
-static unsigned char cntPerformCom = 0; 
+static unsigned short cntPerformCom = 0; 
 
 static unsigned char rxMsg[MSG_MAX_NUM]; 
 static unsigned char txMsgNum[MSG_MAX_NUM];
 static unsigned char cmd3_state = 0;
-//signed short rtmCommand = 0;
+signed short rtmCommand = 0;
 
 // --- Inicializace (Volaná jednou z configApplication) ---
 void configRTM(void) {
@@ -39,7 +39,7 @@ void runRTMCommunication(void) {
             signed short param1 = bytesToInteger(&rxMsg[3]);
             
             if (receivedCmd >= 0 && receivedCmd <= 4) {
-                setRtmCommand(receivedCmd);
+                rtmCommand = receivedCmd;
             }
             if (receivedCmd == 4) {
                 // P?ekontrolujeme limity (0-255) a ulo?íme hodnotu z PC
@@ -48,9 +48,10 @@ void runRTMCommunication(void) {
                 }
         }
     }
+    }
     // 2. ODESILANI DAT (perioda 50 ms)
-        cntPerformCom++;
-    if (cntPerformCom >= RTM_SEND_PERIOD_MS ) {
+        
+    if (cntPerformCom++ >= 50 ) {
         cntPerformCom = 0;
         
         // Získání dat z datového modelu
@@ -60,9 +61,8 @@ void runRTMCommunication(void) {
         int16_t s3_val_int = getS3Output() ? 1 : 0;
         int16_t v9_val_int = getLedV9() ? 1 : 0;
         int16_t v12_val_int = getLedV12() ? 1 : 0;
-        signed short activeCmd = getRtmCommand();
         
-        switch (activeCmd) {
+        switch (rtmCommand) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {
@@ -125,6 +125,7 @@ void runRTMCommunication(void) {
 
                 break; // Konec case 3
             }
+            break;
             case 4:
             {
                 // Vstup do modulátoru (p?ijat z PC, ale odesíláme ho zp?t pro vizualizaci)
@@ -145,6 +146,3 @@ void runRTMCommunication(void) {
     
     
 }
-}
-
-    

@@ -73,8 +73,8 @@ void configApplication(void){//------------------------------------------------
   initMemoryTypeBool (&S3_memory, false);
   initDecoder();
   configRTM();
-  setAdcTrigger(1000);
   initPwm();
+  setAdcTrigger(1000);
 }// configApplication() END 
 
 //===>>>> Call it every 1ms <<<<===
@@ -120,7 +120,7 @@ if (S1_output == true && getRtmCommand() == 4) {
 // --- Nastavení st?ídy PWM ---
 updatePwm(final_pwm_input);
     runLimitIndicators(switched_val);
-    updatePwm(final_pwm_input);
+    setSwitchedOutput(final_pwm_input);
     setLedV1(S1_output); 
     setLedV2(S2_output); 
     setLedV3(S3_output);
