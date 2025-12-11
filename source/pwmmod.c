@@ -9,6 +9,8 @@
 void initPwm(void) {
     // 1. Bezpe?nost: Vypnout p?eru?ení
     __builtin_disable_interrupts();
+    TRISEbits.TRISE1 = 0;  
+    LATEbits.LATE1 = 0;    // Pro jistotu shoda s nulou na za?átku
 
     // 2. MAGICKÉ ODEM?ENÍ PIN? (Bez tohoto servo nepojede!)
     SYSKEY = 0xAA996655;     // Klí? 1
@@ -16,7 +18,8 @@ void initPwm(void) {
     CFGCONbits.IOLOCK = 0;   // Odemknout zápis
 
     // 3. P?i?azení pinu (Te? u? to projde)
-    RPE1Rbits.RPE1R = 11;    // Pin RE1 p?ipojit na OC16
+    //RPE1Rbits.RPE1R = 11;    // Pin RE1 p?ipojit na OC16
+    RPB13Rbits.RPB13R = 11;
 
     // 4. Zamknutí pin?
     CFGCONbits.IOLOCK = 1;   // Zamknout

@@ -120,7 +120,7 @@ void runApplication(void) {//--------------------------------------------------
     setS2Output(S2_output);
     setS3Output(S3_output);
     uint8_t r1_recalc = recalculateR1(potValue_raw);
-    runDecoder(S9A_filtered, S9B_filtered); // Aktualizuje globální s9_counte
+    runDecoder(runFilterTypeBool(&S9A_filter, S9A_raw), runFilterTypeBool(&S9B_filter, S9B_raw)); // Aktualizuje globální s9_counte
     uint8_t switched_val = runSwitchedOutputLogic(
         S2_output,     // Stav LED V2 (Pam?? S2 ?ídí multiplexer)
         r1_recalc,     // Hodnota R1 (0-255)
@@ -151,17 +151,23 @@ updatePwm(final_pwm_input);
     setCoderLedA(S9A_filtered); 
     setCoderLedB(S9B_filtered); 
     uint8_t plcVal90 = getPlcCurrentValue();
-    uint8_t pwmInput255 = scaleTo255(plcVal90);
-    if (getButtonS1()) { 
-        // KDY? DR?ÍTE S1: Po?leme natvrdo st?ední polohu a rozsvítíme p?lku bargrafu
-        updatePwm(128);       
-        setFpgaVxValue(128);  
-    } else {
-        // NORMÁLNÍ PROVOZ: Jedeme podle PLC
-        updatePwm(pwmInput255);
-        setFpgaVxValue(pwmInput255);
+    uint8_t finalTarget = scaleTo255(plcVal90);
+
+
+    // --- B. ROZHODOVÁNÍ (KDO ?ÍDÍ MOTOR?) ---
+    
+
+
+    // Podmínka S2 (P?epína? zdroj?)
+    // P?edpoklad: Pou?íváme getS2Output() jako pam?? (svítí/nesvítí)
+    // Pokud funkci nemáte, pou?ijte getButtonS2() p?ímo.
+
+    
+    if (getS1Output() == true && getRtmCommand() == 4) {
+        finalTarget = getRtmParameter(); 
     }
-    updatePwm(pwmInput255);
+
+    updatePwm(finalTarget);
     setFpgaVxValue(final_pwm_input); // Zobrazení hodnoty na LED V13-V24
     runRTMCommunication();
 }

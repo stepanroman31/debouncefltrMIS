@@ -94,10 +94,10 @@ void runRTMCommunication(void) {
                 char *stateText = "Err";
                 switch (cmd3_state) 
                 {
-                    case PLC_PROG: stateText = "Prog"; break; // 
-                    case PLC_TEST: stateText = "Test"; break; // 
-                    case PLC_RUN:  stateText = "Run";  break; // 
-                    case PLC_STOP: stateText = "Stop"; break; // 
+                    case 0: PLC_PROG: stateText = "Prog"; break; // 
+                    case 1: PLC_TEST: stateText = "Test"; break; // 
+                    case 2: PLC_RUN:  stateText = "Run";  break; // 
+                    case 3: PLC_STOP: stateText = "Stop"; break; // 
                 }
 
                 // 3. Odesílání po ?ástech (stavovı automat pro komunikaci)
@@ -120,7 +120,7 @@ void runRTMCommunication(void) {
                 
                 // Posun na dal?í bu?ku pro p?í?tí cyklus (máme jen 3 bu?ky: 0, 1, 2)
                 cmd3_state++;
-                if (cmd3_state > 2) { 
+                if (cmd3_state > 3) { 
                     cmd3_state = 0;
                 }
                 break;
