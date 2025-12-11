@@ -7,24 +7,40 @@
 #define PWM_MAX_TICKS 1875      // 2 ms
 
 void initPwm(void) {
-    
-    // 1. Nastavení TIMER 2 (Bod 10d)
-    T3CON = 0;              // Vypnout Timer 2
-    T3CONbits.TCKPS = 0b110;// Prescaler 1:64 (pro 20ms periodu)
-    PR3 = PWM_PERIOD_TICKS; // Perioda
-    TMR3 = 0;               // Reset ?íta?e
+    // 1. Bezpe?nost: Vypnout p?eru?ení
+    __builtin_disable_interrupts();
 
-    // 2. Nastavení Output Compare 16 (Bod 10a, 10c)
-    OC16CON = 0;            // Vypnout OC16
-    OC16CONbits.OCTSEL = 1; // Zdroj je Timer 2
-    OC16CONbits.OCM = 0b110;// PWM mód bez fault protection
-    OC16RS = 938; // Výchozí st?ída (1 ms)
-    OC16R = 938;  
-    
-    // 3. Zapnutí
-    T3CONbits.ON = 1;       // Zapnout Timer 2
-    OC16CONbits.ON = 1;     // Zapnout OC16
-    RPE1Rbits.RPE1R = 11; // 11 = OC16 (podle datasheetu PIC32MK)
+    // 2. MAGICKÉ ODEM?ENÍ PIN? (Bez tohoto servo nepojede!)
+    SYSKEY = 0xAA996655;     // Klí? 1
+    SYSKEY = 0x556699AA;     // Klí? 2
+    CFGCONbits.IOLOCK = 0;   // Odemknout zápis
+
+    // 3. P?i?azení pinu (Te? u? to projde)
+    RPE1Rbits.RPE1R = 11;    // Pin RE1 p?ipojit na OC16
+
+    // 4. Zamknutí pin?
+    CFGCONbits.IOLOCK = 1;   // Zamknout
+    SYSKEY = 0;              // Zahodit klí?e
+
+    // 5. Nastavení Timeru 3 (20 ms)
+    T3CON = 0;
+    T3CONbits.TCKPS = 0b110; // Prescaler 1:64
+    PR3 = 18749;             // Perioda
+    TMR3 = 0;
+
+    // 6. Nastavení PWM Modulu (OC16)
+    OC16CON = 0;
+    OC16CONbits.OCTSEL = 1;  // !!! 1 = TIMER 3 !!!
+    OC16CONbits.OCM = 0b110; // PWM mód
+    OC16RS = 1406;           // Startovní poloha (st?ed)
+    OC16R = 1406;
+
+    // 7. Zapnutí
+    T3CONbits.ON = 1;
+    OC16CONbits.ON = 1;
+
+    // 8. Povolit p?eru?ení
+    __builtin_enable_interrupts();
 }
 void updatePwm(uint8_t input_val) {
     // Výpo?et ?í?ky pulzu (lineární interpolace)

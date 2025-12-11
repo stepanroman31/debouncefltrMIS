@@ -87,44 +87,43 @@ void runRTMCommunication(void) {
 
             case 3: // CMD(3): Do Table Terminalu
             {
-                char buffer[40]; 
+                char buffer[20]; 
+                plcState_t state = getPlcState();
+                uint8_t idx = getPlcCurrentIndex();      // Polo?ka 1B
+                uint8_t val90 = getPlcCurrentValue();    // Polo?ka 1C
+                char *stateText = "Err";
                 switch (cmd3_state) 
                 {
-                    case 0: // Stav 0: Poslat Potenciometr
-                        sprintf(buffer, "Output: %d", switched_val);
-                        sendTableTerminalMessageUSB("1A", buffer); // Po?li do bu?ky A1
+                    case PLC_PROG: stateText = "Prog"; break; // 
+                    case PLC_TEST: stateText = "Test"; break; // 
+                    case PLC_RUN:  stateText = "Run";  break; // 
+                    case PLC_STOP: stateText = "Stop"; break; // 
+                }
+
+                // 3. Odesílání po ?ástech (stavový automat pro komunikaci)
+                switch (cmd3_state) 
+                {
+                    case 0: // Bu?ka 1A: Text stavu (nap?. "Prog")
+                        sendTableTerminalMessageUSB("1A", stateText); 
                         break;
                         
-                    case 1: // Stav 1: Poslat S1
-                        sprintf(buffer, "S1: %d", s1_val_int);// Naformátuj jen ?íslo
-                        sendTableTerminalMessageUSB("2A", buffer);
+                    case 1: // Bu?ka 1B: Index kroku (nap?. "0", "1", "2"...)
+                        sprintf(buffer, "%d", idx);
+                        sendTableTerminalMessageUSB("1B", buffer);
                         break;
                         
-                    case 2: // Stav 2: Poslat S2
-                        sprintf(buffer, "S2: %d", s2_val_int);
-                        sendTableTerminalMessageUSB("3A", buffer);
-                        break;
-                    case 3:
-                        sprintf(buffer, "S3: %d", s3_val_int);
-                        sendTableTerminalMessageUSB("4A", buffer);
-                        break;
-                    case 4:
-                        sprintf(buffer, "V9: %d", v9_val_int);
-                        sendTableTerminalMessageUSB("5A", buffer);
-                        break;
-                    case 5:
-                        sprintf(buffer, "V12: %d", v12_val_int);
-                        sendTableTerminalMessageUSB("6A", buffer);
+                    case 2: // Bu?ka 1C: Hodnota zat??ovatele (0-90)
+                        sprintf(buffer, "%d", val90);
+                        sendTableTerminalMessageUSB("1C", buffer);
                         break;
                 }
                 
-                // Posun na dal?í stav pro p?í?tí 40ms cyklus
+                // Posun na dal?í bu?ku pro p?í?tí cyklus (máme jen 3 bu?ky: 0, 1, 2)
                 cmd3_state++;
-                if (cmd3_state > 5) { // Pokud jsme byli ve stavu 2, vrátíme se na 0
+                if (cmd3_state > 2) { 
                     cmd3_state = 0;
                 }
-
-                break; // Konec case 3
+                break;
             }
             break;
             case 4:
