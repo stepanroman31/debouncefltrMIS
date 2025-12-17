@@ -1,7 +1,7 @@
 #include "plc.h"
 #include "data.h"
 
-// ?asova? pro 2s periodu 
+// ?asova? pro periodu krok? (nap?. 2s)
 static uint16_t plcTimerMs = 0;
 #define PLC_STEP_PERIOD_MS 2000
 
@@ -19,11 +19,10 @@ void initPLC(void) {
     plcTimerMs = 0;
 }
 
+// Funkce pro p?epo?et (Zachováno podle va?eho kódu)
 uint8_t scaleTo90(uint8_t input255) {
     // (Input * 90) / 255
     uint16_t temp = (uint16_t)input255 * 90;
-    
-    // 2. Teprve potom d?líme
     return (uint8_t)(temp / 255);
 }
 
@@ -40,59 +39,62 @@ void runPLC(bool btnStop, bool btnRun, bool btnReset, bool btnSet, bool btnTest,
     uint8_t currentIdx = getPlcCurrentIndex();
     uint8_t seqLen = getPlcSequenceLength();
     
-    // Náb??né hrany tla?ítek
+    // Detekce náb??ných hran
     bool rise_Stop = (btnStop && !prev_btnStop);
     bool rise_Run = (btnRun && !prev_btnRun);
     bool rise_Reset = (btnReset && !prev_btnReset);
     bool rise_Set = (btnSet && !prev_btnSet);
     bool rise_Test = (btnTest && !prev_btnTest);
-// Globální RESET (Funguje ve v?ech stavech) [cite: 371, 386, 392, 397]
-    if (rise_Run) { 
-        // Musíte pou?ít SETTER, aby se to zapsalo do data.c!
-        setPlcState(PLC_RUN); 
-        
-        // A pokud pou?íváte lokální prom?nnou pro switch v tomto cyklu:
-        state = PLC_RUN; 
-    }
+
+    // --- GLOBÁLNÍ OVLÁDÁNÍ (Priority) ---
+    
+    // 1. RESET (Nejvy??í priorita - vrátí do PROG a sma?e v?e)
     if (rise_Reset) {
-        initPLC(); // Vyma?e sekvenci a jde do PROG
-        setPlcState(PLC_PROG);
+        initPLC(); 
+        setPlcState(PLC_PROG); // <--- OPRAVA: Místo PLC_RESET dáváme PLC_PROG
         state = PLC_PROG;
-    } else {
+    }
+    // 2. STOP (Zastaví b?h)
+    else if (rise_Stop) {
+        setPlcState(PLC_STOP); // Zápis do globálních dat
+        state = PLC_STOP;
+    }
+    // 3. RUN (Spustí b?h, pokud je sekvence)
+    else if (rise_Run && seqLen > 0) {
+        setPlcState(PLC_RUN);  // Zápis do globálních dat
+        state = PLC_RUN;
+        plcTimerMs = 0;        // Reset ?asova?e kroku
+    }
+    // 4. TEST (Spustí test, pokud je sekvence)
+    else if (rise_Test && seqLen > 0) {
+        setPlcState(PLC_TEST); // Zápis do globálních dat
+        state = PLC_TEST;
+        setPlcCurrentIndex(0);
+        plcTimerMs = 0;
+    }
+    
+    // --- STAVOVÝ AUTOMAT (Logika uvnit? stav?) ---
+    else {
         
-        switch (state) {// --- STAV PROG --- [cite: 363]
+        switch (state) {
+            
+            // --- STAV PROG ---
             case PLC_PROG:
             {
-                // 1. Nastavujeme hodnotu kodérem (0-90)
+                // 1. P?epo?et a zobrazení hodnoty z kodéru
                 uint8_t val90 = scaleTo90(encoderVal);
-                setPlcCurrentValue(val90); // Zobrazujeme live hodnotu
+                setPlcCurrentValue(val90); 
                 
                 // 2. Tla?ítko SET: Ulo?it do sekvence
                 if (rise_Set) {
                     setPlcSequenceValue(seqLen, val90);
                     seqLen++;
                     setPlcSequenceLength(seqLen);
-                    // Zde by mohla být indikace ulo?ení (bliknutí)
-                }
-
-                // 3. P?echod do TEST [cite: 367]
-                if (rise_Test && seqLen > 0) {
-                    setPlcState(PLC_TEST);
-                    state = PLC_TEST;
-                    setPlcCurrentIndex(0);
-                    plcTimerMs = 0;
-                }
-                // 4. P?echod do RUN [cite: 368]
-                if (rise_Run && seqLen > 0) {
-                    setPlcState(PLC_RUN);
-                    state = PLC_RUN;
-                    setPlcCurrentIndex(0);
-                    plcTimerMs = 0;
                 }
                 break;
             }
 
-            // --- STAV TEST --- [cite: 372]
+            // --- STAV TEST ---
             case PLC_TEST:
             {
                 // Automatické krokování (jednou)
@@ -101,7 +103,7 @@ void runPLC(bool btnStop, bool btnRun, bool btnReset, bool btnSet, bool btnTest,
                     plcTimerMs = 0;
                     currentIdx++;
                     if (currentIdx >= seqLen) {
-                        currentIdx = seqLen - 1; // Z?stat na konci [cite: 373]
+                        currentIdx = seqLen - 1; // Z?stat na konci
                     }
                     setPlcCurrentIndex(currentIdx);
                 }
@@ -110,22 +112,15 @@ void runPLC(bool btnStop, bool btnRun, bool btnReset, bool btnSet, bool btnTest,
                 uint8_t val = getPlcSequenceValue(currentIdx);
                 setPlcCurrentValue(val);
 
-                // Tla?ítka
-                if (rise_Test) { // Restart TESTu [cite: 375]
-                    setPlcCurrentIndex(0);
-                    setPlcState(PLC_TEST);
-                    plcTimerMs = 0;
-                }
-                if (rise_Run) { // Jít do RUN [cite: 376]
-                    setPlcState(PLC_RUN);  // <--- Dopl?te zde
-                    state = PLC_RUN;
+                // Restart TESTu
+                if (rise_Test) { 
                     setPlcCurrentIndex(0);
                     plcTimerMs = 0;
                 }
                 break;
             }
 
-            // --- STAV RUN --- [cite: 387]
+            // --- STAV RUN ---
             case PLC_RUN:
             {
                 // Cyklické krokování
@@ -134,7 +129,7 @@ void runPLC(bool btnStop, bool btnRun, bool btnReset, bool btnSet, bool btnTest,
                     plcTimerMs = 0;
                     currentIdx++;
                     if (currentIdx >= seqLen) {
-                        currentIdx = 0; // Smy?ka od za?átku [cite: 405]
+                        currentIdx = 0; // Smy?ka od za?átku
                     }
                     setPlcCurrentIndex(currentIdx);
                 }
@@ -142,24 +137,14 @@ void runPLC(bool btnStop, bool btnRun, bool btnReset, bool btnSet, bool btnTest,
                 // Nastavit hodnotu
                 uint8_t val = getPlcSequenceValue(currentIdx);
                 setPlcCurrentValue(val);
-
-                // Tla?ítka
-                if (rise_Stop) { // Jít do STOP [cite: 390]
-                    setPlcState(PLC_STOP); // <--- Dopl?te zde
-                    state = PLC_STOP;
-                }
                 break;
             }
 
-            // --- STAV STOP --- [cite: 393]
+            // --- STAV STOP ---
             case PLC_STOP:
             {
                 // ?asova? stojí, hodnota zamrzlá
-                // Tla?ítka
-                if (rise_Run) { // Zp?t do RUN (pokra?ovat) [cite: 396]
-                    setPlcState(PLC_RUN);  // <--- Dopl?te zde
-                    state = PLC_RUN;
-                }
+                // ?eká se na RUN nebo RESET (?e?eno naho?e v globálním ovládání)
                 break;
             }
         }

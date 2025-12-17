@@ -88,23 +88,32 @@ void runRTMCommunication(void) {
             case 3: // CMD(3): Do Table Terminalu
             {
                 char buffer[20]; 
-                plcState_t state = getPlcState();
                 uint8_t idx = getPlcCurrentIndex();      // Polo?ka 1B
                 uint8_t val90 = getPlcCurrentValue();    // Polo?ka 1C
-                char *stateText = "Err";
-                switch (cmd3_state) 
-                {
-                    case 0: PLC_PROG: stateText = "Prog"; break; // 
-                    case 1: PLC_TEST: stateText = "Test"; break; // 
-                    case 2: PLC_RUN:  stateText = "Run";  break; // 
-                    case 3: PLC_STOP: stateText = "Stop"; break; // 
+                plcState_t aktualniStav = getPlcState();
+                
+                // 2. P?ipravíme si prom?nnou pro text
+                char *textProTerminal = "Err";
+
+                // 3. IF podmínky pro výb?r textu
+                if (aktualniStav == PLC_PROG) {
+                    textProTerminal = "Prog";  // Kdy? byl Reset (S6)
+                } 
+                else if (aktualniStav == PLC_RUN) {
+                    textProTerminal = "Run";   // Kdy? byl Run (S5)
+                } 
+                else if (aktualniStav == PLC_STOP) {
+                    textProTerminal = "Stop";  // Kdy? byl Stop (S4)
+                } 
+                else if (aktualniStav == PLC_TEST) {
+                    textProTerminal = "Test";  // Kdy? byl Test (S8)
                 }
 
                 // 3. Odesílání po ?ástech (stavový automat pro komunikaci)
                 switch (cmd3_state) 
                 {
                     case 0: // Bu?ka 1A: Text stavu (nap?. "Prog")
-                        sendTableTerminalMessageUSB("1A", stateText); 
+                        sendTableTerminalMessageUSB("1A", textProTerminal); 
                         break;
                         
                     case 1: // Bu?ka 1B: Index kroku (nap?. "0", "1", "2"...)
