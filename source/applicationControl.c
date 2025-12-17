@@ -164,7 +164,20 @@ updatePwm(final_pwm_input);
 
     
     if (getS1Output() == true && getRtmCommand() == 4) {
-        finalTarget = getRtmParameter(); 
+        int rawVal = getRtmParameter(); 
+        
+        // 2. OMEZENÍ SHORA (Pokud je víc ne? 255 -> nastav 255)
+        if (rawVal > 255) {
+            rawVal = 255;
+        }
+        
+        // 3. OMEZENÍ ZDOLA (Pokud je mí? ne? 0 -> nastav 0)
+        if (rawVal < 0) {
+            rawVal = 0;
+        }
+
+        // 4. Bezpe?né p?etypování a pou?ití
+        finalTarget = (uint8_t)rawVal; 
     }
 
     updatePwm(finalTarget);
