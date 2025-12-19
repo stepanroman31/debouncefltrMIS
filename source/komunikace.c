@@ -37,6 +37,12 @@ void runRTMCommunication(void) {
             // Povel je int16_t, za?íná na indexu [1]
             signed short receivedCmd = bytesToInteger(&rxMsg[1]);
             signed short param1 = bytesToInteger(&rxMsg[3]);
+           if(param1 > 255){
+                    param1 = 255;
+                }
+           if(param1 < 0){
+                    param1 = 0;
+            }
             
             if (receivedCmd >= 0 && receivedCmd <= 4) {
                 setRtmCommand(receivedCmd);
