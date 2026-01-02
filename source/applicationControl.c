@@ -61,6 +61,14 @@ long inputPeriod;
 //--- External vars -----------------------------------------------------------
 
 //---- Functions --------------------------------------------------------------
+uint8_t scalePotentiometer_Local(signed short raw_val) {
+    int32_t val = raw_val; 
+    val = val + 2047;      
+    val = val / 16;        
+    if (val > 255) val = 255;
+    if (val < 0) val = 0;
+    return (uint8_t)val;
+}
 
 void configApplication(void){//------------------------------------------------
   //--- User defined functions ---
@@ -119,27 +127,71 @@ void runApplication(void) {//--------------------------------------------------
     setS1Output(S1_output);
     setS2Output(S2_output);
     setS3Output(S3_output);
-    uint8_t r1_recalc = recalculateR1(potValue_raw);
-    runDecoder(runFilterTypeBool(&S9A_filter, S9A_raw), runFilterTypeBool(&S9B_filter, S9B_raw)); // Aktualizuje globální s9_counte
-    uint8_t switched_val = runSwitchedOutputLogic(
-        S2_output,     // Stav LED V2 (Pam?? S2 ?ídí multiplexer)
-        r1_recalc,     // Hodnota R1 (0-255)
-        s9_counter     // Hodnota S9 (0-255)
-    );
-    uint8_t final_pwm_input;
-if (S1_output == true && getRtmCommand() == 4) {
-    // LED V1 svítí A povel CMD(4) je aktivní -> Vstup pro PWM bere hodnotu z PC
-    final_pwm_input = getRtmParameter();
-} else {
-    // Standardní ?ízení DEK logikou
-    final_pwm_input = runFinalSwitchLogic(S3_output, switched_val); 
-}
-
-// --- Nastavení st?ídy PWM ---
-updatePwm(final_pwm_input);
-    runLimitIndicators(switched_val);
-    setSwitchedOutput(final_pwm_input);
+// 4. B?h pod?ízených modul?
+    // Dekodér (aktualizuje globální s9_counter)
+    runDecoder(S9A_filtered, S9B_filtered); 
+    
+    // PLC Automat (po?ítá logiku sekvence)
     runPLC(S4_filt, S5_filt, S6_filt, S7_filt, S8_filt, s9_counter);
+
+
+    // === 5. VÝPO?ET CÍLOVÉ HODNOTY (LOGIKA HIERARCHIE) ===
+    
+    // P?íprava hodnot:
+    // A) Potenciometr (p?epo?ítaný na 0-255)
+    uint8_t val_Pot = scalePotentiometer_Local(potValue_raw);
+    
+    // B) PLC (p?epo?ítané na 0-255)
+    // (P?edpoklad: PLC vrací 0-90, funkce scaleTo255 to p?evede)
+    uint8_t val_PLC = scaleTo255(getPlcCurrentValue());
+    
+    // Prom?nná pro výsledek
+    uint8_t final_pwm_input = 0;
+
+    // --- ROZHODOVÁNÍ PODLE ZADÁNÍ ---
+    // Bod 1: S3 (V3) zhasnutá -> PWM signál 1ms (hodnota 0)
+    if (S3_output == false) {
+        final_pwm_input = 0;
+    } 
+    else {
+        // Bod 2: S3 (V3) svítí -> Rozhoduje S2 (V2)
+        
+        if (S2_output == false) {
+            // S2 (V2) zhasnutá -> ?ízení Potenciometrem R1
+            final_pwm_input = val_Pot;
+        } 
+        else {
+            // S2 (V2) svítí -> ?ízení z PLC (které pou?ívá Kodér S9)
+            final_pwm_input = val_PLC;
+        }
+    }
+
+    // === 6. PRIORITA PC (CMD 4) ===
+    // Pokud svítí V1 (S1_output) a p?ijde CMD 4, p?epí?e se v?e.
+    if (S1_output == true && getRtmCommand() == 4) {
+        int rawVal = getRtmParameter();
+        
+        // Omezení (Clamping)
+        if (rawVal > 255) rawVal = 255;
+        if (rawVal < 0) rawVal = 0;
+        
+        final_pwm_input = (uint8_t)rawVal;
+    }
+
+
+    // === 7. AKTUALIZACE VÝSTUP? ===
+    
+    // PWM Motor (p?es novou bezpe?nou funkci s p?eru?ením)
+    updatePwm(final_pwm_input);
+    
+    // Indikace limit? (V9=0, V12=255)
+    setLedV9(final_pwm_input == 0);
+    setLedV12(final_pwm_input == 255);
+    
+    // Bargraf (FPGA)
+    setFpgaVxValue(final_pwm_input);
+    
+    // LED Stavy tla?ítek
     setLedV1(S1_output); 
     setLedV2(S2_output); 
     setLedV3(S3_output);
@@ -150,38 +202,8 @@ updatePwm(final_pwm_input);
     setLedV8(S8_filt);
     setCoderLedA(S9A_filtered); 
     setCoderLedB(S9B_filtered); 
-    uint8_t plcVal90 = getPlcCurrentValue();
-    uint8_t finalTarget = scaleTo255(plcVal90);
 
-
-    // --- B. ROZHODOVÁNÍ (KDO ?ÍDÍ MOTOR?) ---
-    
-
-
-    // Podmínka S2 (P?epína? zdroj?)
-    // P?edpoklad: Pou?íváme getS2Output() jako pam?? (svítí/nesvítí)
-    // Pokud funkci nemáte, pou?ijte getButtonS2() p?ímo.
-
-    
-    if (getS1Output() == true && getRtmCommand() == 4) {
-        int rawVal = getRtmParameter(); 
-        
-        // 2. OMEZENÍ SHORA (Pokud je víc ne? 255 -> nastav 255)
-        if (rawVal > 255) {
-            rawVal = 255;
-        }
-        
-        // 3. OMEZENÍ ZDOLA (Pokud je mí? ne? 0 -> nastav 0)
-        if (rawVal < 0) {
-            rawVal = 0;
-        }
-
-        // 4. Bezpe?né p?etypování a pou?ití
-        finalTarget = (uint8_t)rawVal; 
-    }
-
-    updatePwm(finalTarget);
-    setFpgaVxValue(final_pwm_input); // Zobrazení hodnoty na LED V13-V24
+    // Komunikace
     runRTMCommunication();
 }
   

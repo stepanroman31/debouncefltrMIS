@@ -9,6 +9,8 @@
 #define	PWMMOD_H
 
 #include <stdint.h>
+#include <xc.h>
+#include <stdbool.h>
 
 void initPwm(void);
 void updatePwm(uint8_t input_val);
