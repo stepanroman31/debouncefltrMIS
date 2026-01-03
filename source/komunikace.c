@@ -104,7 +104,7 @@ void runRTMCommunication(void) {
 
             case 3: // CMD(3): Do Table Terminalu
             {
-                char buffer[20]; 
+                /*char buffer[20]; 
                 uint8_t idx = 0;      // Polo?ka 1B
                 plcState_t aktualniStav = getPlcState();
                 if (aktualniStav == PLC_PROG) {
@@ -152,6 +152,45 @@ void runRTMCommunication(void) {
                 }
                 
                 // Posun na dal?í bu?ku pro p?í?tí cyklus (máme jen 3 bu?ky: 0, 1, 2)
+                cmd3_state++;
+                if (cmd3_state > 2) { 
+                    cmd3_state = 0;
+                }*/
+                char buffer[32];
+                uint8_t pwmVal = getPwmLastValue(); // Aktuální hodnota (0-255)
+                bool stV1 = getS1Output(); // Stav S1
+                bool stV2 = getS2Output(); // Stav S2
+                bool stV9 = getLedV9(); // Min
+                bool stV12 = getLedV12(); // Max (nebo pwmVal == 255)
+
+                // 2. Odesílání po ?ástech (Stavovı automat)
+                switch (cmd3_state) 
+                {
+                    case 0: // Bu?ka 1A: Stavy V1 a V2
+                        // P?íklad vıstupu: "S1:1 S2:0"
+                        sprintf(buffer, "S1:%d S2:%d", stV1, stV2);
+                        sendTableTerminalMessageUSB("1A", buffer); 
+                        break;
+                        
+                    case 1: // Bu?ka 1B: Limity (V9/V12)
+                        // P?íklad vıstupu: "MIN", "MAX" nebo "OK"
+                        if (stV9) {
+                            sprintf(buffer, "MIN");
+                        } else if (stV12) {
+                            sprintf(buffer, "MAX");
+                        } else {
+                            sprintf(buffer, "OK");
+                        }
+                        sendTableTerminalMessageUSB("1B", buffer);
+                        break;
+                        
+                    case 2: // Bu?ka 1C: Hodnota zat??ovatele (0-255)
+                        sprintf(buffer, "%d", pwmVal);
+                        sendTableTerminalMessageUSB("1C", buffer);
+                        break;
+                }
+                
+                // Posun na dal?í fázi
                 cmd3_state++;
                 if (cmd3_state > 2) { 
                     cmd3_state = 0;
