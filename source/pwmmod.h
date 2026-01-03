@@ -14,6 +14,7 @@
 
 void initPwm(void);
 void updatePwm(uint8_t input_val);
+uint8_t getPwmLastValue(void);
 
 #endif	/* PWMMOD_H */
 

@@ -110,9 +110,9 @@ void runApplication(void) {//--------------------------------------------------
     bool S9A_raw = getCoderChannelA();
     bool S9B_raw = getCoderChannelB();
     
-    bool S1_filtered = runFilterTypeBool(&S1_filter, S1_raw);
-    bool S2_filtered = runFilterTypeBool(&S2_filter, S2_raw);
-    bool S3_filtered = runFilterTypeBool(&S3_filter, S3_raw);
+    bool S1_filt = runFilterTypeBool(&S1_filter, S1_raw);
+    bool S2_filt = runFilterTypeBool(&S2_filter, S2_raw);
+    bool S3_filt = runFilterTypeBool(&S3_filter, S3_raw);
     bool S4_filt = runFilterTypeBool(&S4_filter, S4_raw);
     bool S5_filt = runFilterTypeBool(&S5_filter, S5_raw);
     bool S6_filt = runFilterTypeBool(&S6_filter, S6_raw);
@@ -121,9 +121,9 @@ void runApplication(void) {//--------------------------------------------------
     bool S9A_filtered = runFilterTypeBool(&S9A_filter, S9A_raw);
     bool S9B_filtered = runFilterTypeBool(&S9B_filter, S9B_raw);
     // Ulo?íme filtrované výstupy do appState
-    bool S1_output = runMemoryTypeBool(&S1_memory, S1_filtered);
-    bool S2_output = runMemoryTypeBool(&S2_memory, S2_filtered);
-    bool S3_output = runMemoryTypeBool(&S3_memory, S3_filtered);
+    bool S1_output = runMemoryTypeBool(&S1_memory, S1_filt);
+    bool S2_output = runMemoryTypeBool(&S2_memory, S2_filt);
+    bool S3_output = runMemoryTypeBool(&S3_memory, S3_filt);
     setS1Output(S1_output);
     setS2Output(S2_output);
     setS3Output(S3_output);
@@ -185,8 +185,16 @@ void runApplication(void) {//--------------------------------------------------
     updatePwm(final_pwm_input);
     
     // Indikace limit? (V9=0, V12=255)
-    setLedV9(final_pwm_input == 0);
-    setLedV12(final_pwm_input == 255);
+   if (final_pwm_input == 0) {
+        setLedV9(true);   // Min ON
+        setLedV12(false); // Max OFF
+    } else if (final_pwm_input == 255) {
+        setLedV9(false);  // Min OFF
+        setLedV12(true);  // Max ON
+    } else {
+        setLedV9(false);  // Min OFF
+        setLedV12(false); // Max OFF
+    }
     
     // Bargraf (FPGA)
     setFpgaVxValue(final_pwm_input);

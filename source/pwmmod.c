@@ -54,3 +54,6 @@ void __attribute__((interrupt(IPL1SOFT), vector(_TIMER_2_VECTOR))) Timer2Handler
     // 4. Smazat vlajku p?eru?ení
     IFS0bits.T2IF = 0;
 }
+uint8_t getPwmLastValue(void) {
+    return g_pwm_request; // Vrací globální prom?nnou, kterou u? tam máte
+}

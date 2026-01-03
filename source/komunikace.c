@@ -73,10 +73,21 @@ void runRTMCommunication(void) {
             
             case 1: // CMD(1): Potenciometr do grafu (1x int16_t)
             {
-                txMsgNum[0] = 7; 
-                integerToBytes((int16_t)switched_val, &txMsgNum[1]);
-                integerToBytes(v9_val_int, &txMsgNum[3]);
-                integerToBytes(v12_val_int, &txMsgNum[5]);
+                uint8_t realVal = getPwmLastValue(); 
+
+                // 2. Dopo?ítáme stavy Min/Max p?ímo z této hodnoty
+                // Tím vy?e?íte vıtku, ?e signalizace nefunguje správn?.
+                int16_t valToSend = (int16_t)realVal;
+                int16_t statusMin = (realVal == 0) ? 1 : 0;   // 1 pokud je 0, jinak 0
+                int16_t statusMax = (realVal == 255) ? 1 : 0; // 1 pokud je 255, jinak 0
+
+                // 3. Napln?ní bufferu (zachováváme vá? formát pro graf)
+                txMsgNum[0] = 7; // Délka zprávy// Pozice 1-2: Hodnota PWM (Zat??ovatel) [cite: 146]
+                integerToBytes(valToSend, &txMsgNum[1]);// Pozice 3-4: Stav LED V9 (Min) [cite: 146]
+                integerToBytes(statusMin, &txMsgNum[3]);// Pozice 5-6: Stav LED V12 (Max) [cite: 146]
+                integerToBytes(statusMax, &txMsgNum[5]);
+
+                // 4. Odeslání
                 sendMessageUSB(txMsgNum, COM_GO); 
                 break;
             }
@@ -94,10 +105,17 @@ void runRTMCommunication(void) {
             case 3: // CMD(3): Do Table Terminalu
             {
                 char buffer[20]; 
-                uint8_t idx = getPlcCurrentIndex();      // Polo?ka 1B
-                uint8_t val90 = getPlcCurrentValue();    // Polo?ka 1C
+                uint8_t idx = 0;      // Polo?ka 1B
                 plcState_t aktualniStav = getPlcState();
-                
+                if (aktualniStav == PLC_PROG) {
+                    // V re?imu PROG chceme vid?t, kolikátı krok zrovna definujeme.
+                    // To odpovídá aktuální délce sekvence (nap?. mám ulo?eny 2 kroky, te? d?lám 3. krok = index 2).
+                    idx = getPlcSequenceLength(); 
+                } else {
+                    // V re?imu RUN/TEST/STOP chceme vid?t, kterı krok se práv? vykonává.
+                    idx = getPlcCurrentIndex();   
+                }
+                uint8_t val90 = getPlcCurrentValue();
                 // 2. P?ipravíme si prom?nnou pro text
                 char *textProTerminal = "Err";
 
@@ -135,7 +153,7 @@ void runRTMCommunication(void) {
                 
                 // Posun na dal?í bu?ku pro p?í?tí cyklus (máme jen 3 bu?ky: 0, 1, 2)
                 cmd3_state++;
-                if (cmd3_state > 3) { 
+                if (cmd3_state > 2) { 
                     cmd3_state = 0;
                 }
                 break;
